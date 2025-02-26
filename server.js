@@ -39,7 +39,18 @@ app.post('/reserve-car', (req, res) => {
     const data = req.body;
 
     // Validate required fields
-    const requiredFields = ['carBrand', 'carModel', 'startDate', 'endDate', 'pickupLocation', 'dropoffLocation', 'customerEmail', 'customerPhone'];
+    const requiredFields = [
+        'carBrand', 
+        'carModel', 
+        'startDate', 
+        'endDate', 
+        'pickupTime',
+        'dropoffTime',
+        'pickupLocation', 
+        'dropoffLocation', 
+        'customerEmail', 
+        'customerPhone'
+    ];
 
     for (let field of requiredFields) {
         if (!data[field] || data[field] === '') {
@@ -70,16 +81,20 @@ app.post('/reserve-car', (req, res) => {
                     <p>Thank you for choosing Kelvin Zanzibar Cars. Your reservation has been received with the following details:</p>
                     <p><strong>Vehicle:</strong> ${data.carBrand} ${data.carModel}</p>
                     <p><strong>Pick-up Date:</strong> ${data.startDate}</p>
+                    <p><strong>Pick-up Time:</strong> ${data.pickupTime}</p>
                     <p><strong>Drop-off Date:</strong> ${data.endDate}</p>
+                    <p><strong>Drop-off Time:</strong> ${data.dropoffTime}</p>
                     <p><strong>Pick-up Location:</strong> ${data.pickupLocation}</p>
                     <p><strong>Drop-off Location:</strong> ${data.dropoffLocation}</p>
                     <p>We will review your reservation and contact you shortly to confirm the details.</p>
                     <p>If you have any questions, please don't hesitate to contact us.</p>
+                    <p>Best regards,<br>Kelvin Zanzibar Cars Team</p>
                 </div>
                 <div class='footer'>
                     <p>Kelvin Zanzibar Cars<br>
                     Phone: +255 712 682 981<br>
-                    Email: info@kelvinzanzibarcars.co.tz</p>
+                    Email: info@kelvinzanzibarcars.co.tz<br>
+                    Website: www.kelvinzanzibarcars.co.tz</p>
                 </div>
             </div>
         </body>
@@ -96,6 +111,7 @@ app.post('/reserve-car', (req, res) => {
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
                 .header { background-color: #2196F3; color: white; padding: 20px; text-align: center; }
                 .content { padding: 20px; }
+                .details { margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
             </style>
         </head>
         <body>
@@ -104,16 +120,24 @@ app.post('/reserve-car', (req, res) => {
                     <h1>New Reservation Details</h1>
                 </div>
                 <div class='content'>
-                    <h2>Reservation Information:</h2>
-                    <p><strong>Vehicle:</strong> ${data.carBrand} ${data.carModel}</p>
-                    <p><strong>Pick-up Date:</strong> ${data.startDate}</p>
-                    <p><strong>Drop-off Date:</strong> ${data.endDate}</p>
-                    <p><strong>Pick-up Location:</strong> ${data.pickupLocation}</p>
-                    <p><strong>Drop-off Location:</strong> ${data.dropoffLocation}</p>
+                    <div class='details'>
+                        <h2>Reservation Information:</h2>
+                        <p><strong>Vehicle:</strong> ${data.carBrand} ${data.carModel}</p>
+                        <p><strong>Pick-up Date:</strong> ${data.startDate}</p>
+                        <p><strong>Pick-up Time:</strong> ${data.pickupTime}</p>
+                        <p><strong>Drop-off Date:</strong> ${data.endDate}</p>
+                        <p><strong>Drop-off Time:</strong> ${data.dropoffTime}</p>
+                        <p><strong>Pick-up Location:</strong> ${data.pickupLocation}</p>
+                        <p><strong>Drop-off Location:</strong> ${data.dropoffLocation}</p>
+                    </div>
                     
-                    <h2>Customer Information:</h2>
-                    <p><strong>Email:</strong> ${data.customerEmail}</p>
-                    <p><strong>Phone:</strong> ${data.customerPhone}</p>
+                    <div class='details'>
+                        <h2>Customer Information:</h2>
+                        <p><strong>Email:</strong> ${data.customerEmail}</p>
+                        <p><strong>Phone:</strong> ${data.customerPhone}</p>
+                    </div>
+                    
+                    <p>Please review and confirm this reservation as soon as possible.</p>
                 </div>
             </div>
         </body>
@@ -142,16 +166,36 @@ app.post('/reserve-car', (req, res) => {
         transporter.sendMail(mailOptionsAdmin),
     ])
     .then(() => {
-        res.status(200).json({ success: true, message: 'Emails sent successfully' });
+        res.status(200).json({ 
+            success: true, 
+            message: 'Reservation confirmation emails sent successfully' 
+        });
     })
     .catch((error) => {
-        console.error(error);
-        res.status(500).json({ error: 'Email sending failed' });
+        console.error('Email sending failed:', error);
+        res.status(500).json({ 
+            error: 'Failed to send reservation emails',
+            details: error.message 
+        });
     });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 // Start the server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+
+// Error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (error) => {
+    console.error('Unhandled Rejection:', error);
 });
